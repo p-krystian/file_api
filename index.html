@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>Upload</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📂</text></svg>">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-size: 26px;
+        font-family: sans-serif;
+        display: grid;
+        place-items: center;
+        min-height: 95vh;
+        min-height: 100dvh;
+        color: #dadada;
+        color-scheme: dark;
+
+        background-color: #121212;
+        background-position:
+          20px 0,
+          20px 0,
+          0 0,
+          0 0;
+        background-size: 20px 20px;
+        background-repeat: repeat;
+        background-image:
+          linear-gradient(135deg, #000000 25%, transparent 25%),
+          linear-gradient(225deg, #000000 25%, transparent 25%),
+          linear-gradient(45deg, #000000 25%, transparent 25%),
+          linear-gradient(315deg, #000000 25%, #121212 25%);
+      }
+      input[type="file"] {
+        display: none;
+      }
+      .select {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+      }
+      .select label span,
+      button {
+        font-size: 1.2em;
+        cursor: pointer;
+        padding: 0.5rem;
+        background: #363b74;
+        border: 0.2rem solid #060b44;
+        border-radius: 0.5rem;
+      }
+      p {
+        font-size: 1.2em;
+        max-width: 90vw;
+        word-break: break-all;
+        text-align: center;
+      }
+      button:disabled {
+        pointer-events: none;
+        filter: brightness(0.6);
+      }
+      .upload {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 2rem;
+      }
+      .progress {
+        background: #222222;
+        border: 0.2rem solid #060b44;
+        border-radius: 0.5rem;
+        height: 2rem;
+        width: 18rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .progress::before {
+        content: "";
+        background: #363b74;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+
+        transform: translateX(calc(-100% + var(--v)));
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="select">
+        <label>
+          <span>Wybierz plik</span>
+          <input id="file" type="file" required />
+        </label>
+        <p>...</p>
+        <button disabled>Prześlij</button>
+      </section>
+      <section class="upload" style="display: none">
+        <p class="status">???</p>
+        <div class="progress" style="--v: 0%"></div>
+        <p>
+          <span class="current">3</span>
+          &sol;
+          <span class="total">34</span>
+          MB
+        </p>
+      </section>
+    </main>
+
+    <script type="text/javascript">
+      const submit = document.querySelector(".select button");
+      const select = document.querySelector(".select");
+      const upload = document.querySelector(".upload");
+      const fileName = document.querySelector(".select p");
+      const fileInput = document.querySelector("#file");
+      const progress = document.querySelector(".progress");
+      const current = document.querySelector(".current");
+      const total = document.querySelector(".total");
+      const status = document.querySelector(".status");
+
+      function postFile() {
+        if (fileInput.files[0].length < 1) return;
+        const file = fileInput.files[0];
+
+        const request = new XMLHttpRequest();
+
+        request.upload.addEventListener("progress", (e) => {
+          current.innerText = (e.loaded / 1024 / 1024).toFixed(2);
+          progress.style.setProperty("--v", `${(e.loaded / e.total) * 100}%`);
+        });
+        request.upload.addEventListener("load", () => {
+          status.innerText = "Wysłano, przetwarzanie...";
+          fileInput.value = "";
+          changeFile(fileInput);
+        });
+        request.upload.addEventListener("error", () => {
+          status.innerText = "Coś się zjebało :/";
+        });
+        request.addEventListener("load", (e) => {
+          status.innerText = `${e.target.status} - ${e.target.response}`;
+        });
+
+        total.innerText = (file.size / 1024 / 1024).toFixed(2);
+        current.innerText = 0;
+        status.innerText = "Wysyłanie...";
+        progress.style.setProperty("--v", 0);
+        select.style.display = "none";
+        upload.style.display = "";
+
+        request.open("post", "/send", true);
+        request.timeout = 1000 * 60 * 60 * 3; // Timeout: 3h
+        request.setRequestHeader("filename", file.name);
+        request.send(file);
+      }
+      function changeFile(input) {
+        if (input.files.length < 1) {
+          fileName.innerText = "...";
+          submit.setAttribute("disabled", "true");
+          return;
+        }
+        fileName.innerText = input.files[0].name;
+        submit.removeAttribute("disabled");
+      }
+
+      window.addEventListener("load", () => {
+        submit.addEventListener("click", () => postFile());
+        fileInput.addEventListener("change", (e) => changeFile(e.target));
+        changeFile(fileInput);
+      });
+    </script>
+  </body>
+</html>
