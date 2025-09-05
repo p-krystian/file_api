@@ -1,5 +1,6 @@
-import uvicorn, aiofiles
-from os import system
+import uvicorn
+import aiofiles
+from os import system, makedirs
 from time import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -15,6 +16,7 @@ app = FastAPI(
 async def recive(request:Request):
     mb = lambda b: round(b / 1024 / 1024, 1)
     try:
+        makedirs('./uploads', exist_ok=True)
         filename = request.headers.get(
             'filename',
             f'stream-{int(time()*1000)}.part'
