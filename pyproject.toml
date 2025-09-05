@@ -1,0 +1,11 @@
+[project]
+name = "file-api"
+version = "0.5.0"
+description = "Fast file upload to device by network"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+]
