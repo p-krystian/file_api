@@ -2,8 +2,6 @@
 
 A simple and fast file upload web application built with FastAPI. This project provides a web interface for uploading files over a network with real-time progress tracking.
 
-**Note:** The web interface is in Polish language.
-
 ## Features
 
 - 📊 Real-time upload progress tracking
@@ -59,14 +57,3 @@ The application will:
 
 1. **Locally**: Open `http://localhost:8000` in your browser
 2. **Network**: Use the IP address shown in the console (e.g., `http://192.168.1.100:8000`)
-
-### Web Interface (Polish)
-
-- **"Wybierz plik"**: Select file button
-- **"Prześlij"**: Upload button
-- **Progress bar**: Shows upload progress in real-time
-- **File size display**: Shows current/total MB uploaded
-- **Status messages**:
-  - "Wysyłanie...": Uploading...
-  - "Wysłano, przetwarzanie...": Sent, processing...
-  - "Coś się zjebało :/"): Something went wrong :/

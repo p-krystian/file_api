@@ -95,11 +95,11 @@
     <main>
       <section class="select">
         <label>
-          <span>Wybierz plik</span>
+          <span>Choose file</span>
           <input id="file" type="file" required />
         </label>
         <p>...</p>
-        <button disabled>Prześlij</button>
+        <button disabled>Upload</button>
       </section>
       <section class="upload" style="display: none">
         <p class="status">???</p>
@@ -135,12 +135,12 @@
           progress.style.setProperty("--v", `${(e.loaded / e.total) * 100}%`);
         });
         request.upload.addEventListener("load", () => {
-          status.innerText = "Wysłano, przetwarzanie...";
+          status.innerText = "Sent, processing...";
           fileInput.value = "";
           changeFile(fileInput);
         });
         request.upload.addEventListener("error", () => {
-          status.innerText = "Coś się zjebało :/";
+          status.innerText = "Something went wrong :/";
         });
         request.addEventListener("load", (e) => {
           status.innerText = `${e.target.status} - ${e.target.response}`;
@@ -148,7 +148,7 @@
 
         total.innerText = (file.size / 1024 / 1024).toFixed(2);
         current.innerText = 0;
-        status.innerText = "Wysyłanie...";
+        status.innerText = "Uploading...";
         progress.style.setProperty("--v", 0);
         select.style.display = "none";
         upload.style.display = "";
