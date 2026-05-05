@@ -4,7 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
     <title>Upload</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📂</text></svg>">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📂</text></svg>"
+    />
     <style>
       * {
         box-sizing: border-box;
@@ -95,8 +98,8 @@
     <main>
       <section class="select">
         <label>
-          <span>Choose file</span>
-          <input id="file" type="file" required />
+          <span>Choose files</span>
+          <input id="file" type="file" required multiple />
         </label>
         <p>...</p>
         <button disabled>Upload</button>
@@ -124,52 +127,66 @@
       const total = document.querySelector(".total");
       const status = document.querySelector(".status");
 
-      function postFile() {
-        if (fileInput.files[0].length < 1) return;
-        const file = fileInput.files[0];
+      function postFile(file, currIndex, totalFiles) {
+        return new Promise((resolve, reject) => {
+          const request = new XMLHttpRequest();
 
-        const request = new XMLHttpRequest();
+          request.upload.addEventListener("progress", (e) => {
+            current.innerText = (e.loaded / 1024 / 1024).toFixed(2);
+            progress.style.setProperty("--v", `${(e.loaded / e.total) * 100}%`);
+          });
+          request.upload.addEventListener("load", () => {
+            status.innerText = "Sent, processing...";
+          });
+          request.upload.addEventListener("error", (e) => {
+            status.innerText = "Something went wrong :/";
+            reject(e);
+          });
+          request.addEventListener("load", (e) => {
+            status.innerText = `${e.target.status} - ${e.target.response}`;
+            resolve(e);
+          });
 
-        request.upload.addEventListener("progress", (e) => {
-          current.innerText = (e.loaded / 1024 / 1024).toFixed(2);
-          progress.style.setProperty("--v", `${(e.loaded / e.total) * 100}%`);
-        });
-        request.upload.addEventListener("load", () => {
-          status.innerText = "Sent, processing...";
-          fileInput.value = "";
-          changeFile(fileInput);
-        });
-        request.upload.addEventListener("error", () => {
-          status.innerText = "Something went wrong :/";
-        });
-        request.addEventListener("load", (e) => {
-          status.innerText = `${e.target.status} - ${e.target.response}`;
-        });
+          total.innerText = (file.size / 1024 / 1024).toFixed(2);
+          current.innerText = 0;
+          status.innerText = `${currIndex + 1}/${totalFiles} Uploading...`;
+          progress.style.setProperty("--v", 0);
+          select.style.display = "none";
+          upload.style.display = "";
 
-        total.innerText = (file.size / 1024 / 1024).toFixed(2);
-        current.innerText = 0;
-        status.innerText = "Uploading...";
-        progress.style.setProperty("--v", 0);
-        select.style.display = "none";
-        upload.style.display = "";
-
-        request.open("post", "/send", true);
-        request.timeout = 1000 * 60 * 60 * 3; // Timeout: 3h
-        request.setRequestHeader("filename", file.name);
-        request.send(file);
+          request.open("post", "/send", true);
+          request.timeout = 1000 * 60 * 60 * 3; // Timeout: 3h
+          request.setRequestHeader("filename", file.name);
+          request.send(file);
+        });
       }
+
+      async function postFiles() {
+        if (fileInput.files.length < 1) return;
+        for (let i = 0; i < fileInput.files.length; i++) {
+          await postFile(fileInput.files[i], i, fileInput.files.length);
+        }
+
+        fileInput.value = "";
+        changeFile(fileInput);
+      }
+
       function changeFile(input) {
         if (input.files.length < 1) {
           fileName.innerText = "...";
           submit.setAttribute("disabled", "true");
           return;
         }
-        fileName.innerText = input.files[0].name;
+
+        fileName.innerText =
+          input.files.length > 1
+            ? `${input.files.length} files`
+            : input.files[0].name;
         submit.removeAttribute("disabled");
       }
 
       window.addEventListener("load", () => {
-        submit.addEventListener("click", () => postFile());
+        submit.addEventListener("click", () => postFiles());
         fileInput.addEventListener("change", (e) => changeFile(e.target));
         changeFile(fileInput);
       });
