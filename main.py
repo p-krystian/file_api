@@ -45,5 +45,5 @@ async def index():
         return await file.read()
 
 if __name__ == '__main__':
-    system('(ip a || ifconfig) | grep "inet 192"')
+    system(r'(ip a || ifconfig) | grep "inet 10\|192"')
     uvicorn.run(app=app, host='0.0.0.0', port=8000)
